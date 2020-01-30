@@ -6,12 +6,10 @@ import es.codeurjc.webchat.User;
 import org.junit.Test;
 
 import java.util.Map;
-import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class Improvement1 {
