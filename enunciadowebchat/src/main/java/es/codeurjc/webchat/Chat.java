@@ -22,10 +22,13 @@ public class Chat {
     }
 
     public void addUser(User user) {
-        users.put(user.getName(), user);
-        for (User u : users.values()) {
-            if (u != user) {
-                u.newUserInChat(this, user);
+        synchronized (users)
+        {
+            users.put(user.getName(), user);
+            for (User u : users.values()) {
+                if (u != user) {
+                    u.newUserInChat(this, user);
+                }
             }
         }
     }
