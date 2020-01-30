@@ -8,7 +8,7 @@ import java.util.Map;
 public class Chat {
 
 	private String name;
-	private Map<String, User> users = new HashMap<>();
+	private Map<String, User> users = Collections.synchronizedMap(new HashMap<>());
 
 	private ChatManager chatManager;
 

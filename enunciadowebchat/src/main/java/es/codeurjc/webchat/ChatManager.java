@@ -9,8 +9,8 @@ import java.util.concurrent.TimeoutException;
 
 public class ChatManager {
 
-	private Map<String, Chat> chats = new HashMap<>();
-	private Map<String, User> users = new HashMap<>();
+	private Map<String, Chat> chats = Collections.synchronizedMap(new HashMap<>());
+	private Map<String, User> users = Collections.synchronizedMap(new HashMap<>());
 	private int maxChats;
 
 	public ChatManager(int maxChats) {
