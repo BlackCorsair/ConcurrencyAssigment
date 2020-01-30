@@ -19,11 +19,20 @@ public class ChatManager {
 
     public void newUser(User user) {
 
-        if (users.containsKey(user.getName())) {
+        if (checkUserNames(user.getName())) {
             throw new IllegalArgumentException("There is already a user with name \'"
                     + user.getName() + "\'");
         } else {
-            users.put(user.getName(), user);
+            synchronized (users)
+            {
+                users.put(user.getName(), user);
+            }
+        }
+    }
+
+    private boolean checkUserNames(String username){
+        synchronized (users) {
+            return users.containsKey(username);
         }
     }
 
