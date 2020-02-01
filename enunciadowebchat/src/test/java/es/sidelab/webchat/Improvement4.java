@@ -5,12 +5,18 @@ import es.codeurjc.webchat.ChatManager;
 import es.codeurjc.webchat.User;
 import org.junit.Test;
 import org.junit.Before;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 public class Improvement4 {
     public static CountDownLatch countdown;
+    public static ConcurrentLinkedQueue messages;
     private ChatManager chatManager;
     private Chat chat;
 
@@ -25,6 +31,7 @@ public class Improvement4 {
             e.printStackTrace();
         }
         countdown = new CountDownLatch(4);
+        messages = new ConcurrentLinkedQueue<String>();
     }
 
     @Test
@@ -44,6 +51,33 @@ public class Improvement4 {
                 delta < 1.1);
     }
 
+    @Test
+    public void testConcurrencyOrderInMessages() throws InterruptedException, TimeoutException {
+        // setup
+        countdown = new CountDownLatch(3);
+        chat.removeUser(chat.getUser("user2"));
+        chat.removeUser(chat.getUser("user3"));
+
+        // Execute
+        long tStart = System.currentTimeMillis();
+
+        for (int i = 0; i < 3; i++) {
+            chat.sendMessage(chat.getUser("user0"), Integer.toString(i));
+        }
+
+        countdown.await();
+
+        long tEnd = System.currentTimeMillis();
+        double delta = (tEnd - tStart) / 1000.0;
+
+        // assert
+        String sorted = messages.stream().sorted().collect(Collectors.toList()).toString();
+        assertTrue("Time '" + delta + "' is greater than 1.5s",
+                delta < 1.1);
+        assertEquals("Messages are not in order" + messages.toString(), messages.toString(), sorted);
+    }
+
+
     private Chat populateChatManager(ChatManager chatManager) throws InterruptedException, TimeoutException {
         chatManager.newChat("Chat", 5, TimeUnit.SECONDS);
         final String[] chatName = new String[1];
@@ -57,8 +91,8 @@ public class Improvement4 {
                 @Override
                 public void newMessage(Chat chat, User user, String message) {
                     Thread t = Thread.currentThread();
-                    System.out.println("New message '" + message + "' from user " + user.getName()
-                            + " in chat " + chat.getName() + " from thread " + t.getName());
+                    messages.add(message);
+                    System.out.println(message + " from user " + user.getName() + " to user " + this.name);
 
                     try {
                         Thread.sleep(1000);
