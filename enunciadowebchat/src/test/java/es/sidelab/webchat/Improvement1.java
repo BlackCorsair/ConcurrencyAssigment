@@ -7,7 +7,6 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
@@ -18,7 +17,7 @@ import static org.junit.Assert.assertTrue;
 public class Improvement1 {
     private CyclicBarrier barrier = new CyclicBarrier(4);
 
-    private void doThings(ChatManager cm) throws InterruptedException, BrokenBarrierException, TimeoutException {
+    private void simulateUserUsage(ChatManager cm) throws InterruptedException, BrokenBarrierException, TimeoutException {
         Thread t = Thread.currentThread();
 
         final String[] chatName = new String[1];
@@ -52,7 +51,7 @@ public class Improvement1 {
         for (int i = 0; i < 4; i++) {
             threads.add(new Thread(() -> {
                 try {
-                    doThings(chatManager);
+                    simulateUserUsage(chatManager);
                 } catch (InterruptedException | BrokenBarrierException | TimeoutException e) {
                     synchronized (e) {
                         e.printStackTrace();
