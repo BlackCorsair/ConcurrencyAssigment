@@ -7,14 +7,12 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 import static org.junit.Assert.assertTrue;
 
 public class Improvement1 {
+    private ExecutorService executivePower = Executors.newFixedThreadPool(4);
     private CyclicBarrier barrier = new CyclicBarrier(4);
 
     private void simulateUserUsage(ChatManager cm) throws InterruptedException, BrokenBarrierException, TimeoutException {
@@ -46,10 +44,8 @@ public class Improvement1 {
     @Test
     public void testIfThereAreConcurrentErrorsInChatClasses() throws InterruptedException, TimeoutException {
         ChatManager chatManager = new ChatManager(50);
-        List<Thread> threads = new ArrayList<>();
-
         for (int i = 0; i < 4; i++) {
-            threads.add(new Thread(() -> {
+            this.executivePower.execute(() -> {
                 try {
                     simulateUserUsage(chatManager);
                 } catch (InterruptedException | BrokenBarrierException | TimeoutException e) {
@@ -59,12 +55,10 @@ public class Improvement1 {
 
                     assertTrue(e.getMessage(), false);
                 }
-            }));
-            threads.get(i).start();
+            });
         }
-        for (Thread t : threads) {
-            t.join();
-        }
+        this.executivePower.shutdown();
+        this.executivePower.awaitTermination(10, TimeUnit.SECONDS);
         System.out.println("Test finish.");
     }
 }
