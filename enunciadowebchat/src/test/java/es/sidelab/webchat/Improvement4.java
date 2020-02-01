@@ -4,20 +4,31 @@ import es.codeurjc.webchat.Chat;
 import es.codeurjc.webchat.ChatManager;
 import es.codeurjc.webchat.User;
 import org.junit.Test;
+import org.junit.Before;
 import java.util.concurrent.*;
 
 import static org.junit.Assert.assertTrue;
 
 public class Improvement4 {
     public static CountDownLatch countdown;
+    private ChatManager chatManager;
+    private Chat chat;
+
+    @Before
+    public void setUp() {
+        this.chatManager = new ChatManager(50);
+        try {
+            chat = populateChatManager(chatManager);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (TimeoutException e) {
+            e.printStackTrace();
+        }
+        countdown = new CountDownLatch(4);
+    }
 
     @Test
     public void testConcurrencyInMessages() throws InterruptedException, TimeoutException {
-        // Setup
-        ChatManager chatManager = new ChatManager(50);
-        Chat chat = populateChatManager(chatManager);
-        countdown = new CountDownLatch(4);
-
         // Execute
         long tStart = System.currentTimeMillis();
 
