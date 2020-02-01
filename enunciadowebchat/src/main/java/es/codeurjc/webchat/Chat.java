@@ -4,8 +4,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Chat {
+
+    private ExecutorService msgExecutor = Executors.newCachedThreadPool();
 
     private String name;
     private Map<String, User> users = Collections.synchronizedMap(new HashMap<>());
@@ -27,7 +32,7 @@ public class Chat {
             users.put(user.getName(), user);
             for (User u : users.values()) {
                 if (u != user) {
-                    u.newUserInChat(this, user);
+                    msgExecutor.execute(()-> u.newUserInChat(this, user));
                 }
             }
         }
@@ -36,7 +41,7 @@ public class Chat {
     public void removeUser(User user) {
         users.remove(user.getName());
         for (User u : users.values()) {
-            u.userExitedFromChat(this, user);
+            msgExecutor.execute(()-> u.userExitedFromChat(this, user));
         }
     }
 
@@ -50,7 +55,7 @@ public class Chat {
 
     public void sendMessage(User user, String message) {
         for (User u : users.values()) {
-            u.newMessage(this, user, message);
+            msgExecutor.execute(()-> u.newMessage(this, user, message));
         }
     }
 
