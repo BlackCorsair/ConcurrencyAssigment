@@ -5,15 +5,12 @@ import es.codeurjc.webchat.ChatManager;
 import es.codeurjc.webchat.User;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.*;
 
 import static org.junit.Assert.assertTrue;
 
 public class Improvement1 {
     private ExecutorService executivePower = Executors.newFixedThreadPool(4);
-    private CyclicBarrier barrier = new CyclicBarrier(4);
 
     private void simulateUserUsage(ChatManager cm) throws InterruptedException, BrokenBarrierException, TimeoutException {
         Thread t = Thread.currentThread();
@@ -38,7 +35,6 @@ public class Improvement1 {
         }
 
         System.out.println(t.getName() + " done");
-        barrier.await();
     }
 
     @Test
