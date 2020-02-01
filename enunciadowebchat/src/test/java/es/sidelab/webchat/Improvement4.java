@@ -30,7 +30,7 @@ public class Improvement4 {
         } catch (TimeoutException e) {
             e.printStackTrace();
         }
-        countdown = new CountDownLatch(4);
+        countdown = new CountDownLatch(3);
         messages = new ConcurrentLinkedQueue<String>();
     }
 
@@ -55,8 +55,6 @@ public class Improvement4 {
     public void testConcurrencyOrderInMessages() throws InterruptedException, TimeoutException {
         // setup
         countdown = new CountDownLatch(3);
-        chat.removeUser(chat.getUser("user2"));
-        chat.removeUser(chat.getUser("user3"));
 
         // Execute
         long tStart = System.currentTimeMillis();
@@ -72,6 +70,7 @@ public class Improvement4 {
 
         // assert
         String sorted = messages.stream().sorted().collect(Collectors.toList()).toString();
+        System.out.println("\tmessages: " + messages.toString() + "\n\tsorted: " + sorted);
         assertTrue("Time '" + delta + "' is greater than 1.5s",
                 delta < 1.1);
         assertEquals("Messages are not in order" + messages.toString(), messages.toString(), sorted);
