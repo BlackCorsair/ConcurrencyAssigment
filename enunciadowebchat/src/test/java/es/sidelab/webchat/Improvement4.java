@@ -78,7 +78,6 @@ public class Improvement4 {
 
 
     private Chat populateChatManager(ChatManager chatManager) throws InterruptedException, TimeoutException {
-        chatManager.newChat("Chat", 5, TimeUnit.SECONDS);
         final String[] chatName = new String[1];
 
         for (int i = 0; i < 4; i++) {
