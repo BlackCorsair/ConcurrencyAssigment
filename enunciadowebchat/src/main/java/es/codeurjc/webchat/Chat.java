@@ -5,20 +5,8 @@ import java.util.concurrent.*;
 
 public class Chat {
 
-    private class MessageTuple {
-        public User origin_user;
-        public User end_user;
-        public String message;
-
-        MessageTuple(User origin, User end, String message) {
-            this.origin_user = origin;
-            this.end_user = end;
-            this.message = message;
-        }
-    }
-
     private ExecutorService msgExecutor = Executors.newCachedThreadPool();
-    private LinkedBlockingQueue<MessageTuple> msgQueue;
+    private LinkedBlockingQueue<Runnable> callQueue;
 
     private String name;
     private Map<String, User> users = Collections.synchronizedMap(new HashMap<>());
@@ -28,7 +16,7 @@ public class Chat {
     public Chat(ChatManager chatManager, String name) {
         this.chatManager = chatManager;
         this.name = name;
-        this.msgQueue = new LinkedBlockingQueue<>();
+        this.callQueue = new LinkedBlockingQueue<>();
     }
 
     public String getName() {
@@ -40,17 +28,21 @@ public class Chat {
             users.put(user.getName(), user);
             for (User u : users.values()) {
                 if (u != user) {
-                    msgExecutor.execute(() -> u.newUserInChat(this, user));
+                    callQueue.add(() -> u.newUserInChat(this, user));
                 }
             }
         }
+        runCallQueue();
     }
 
     public void removeUser(User user) {
         users.remove(user.getName());
         for (User u : users.values()) {
-            msgExecutor.execute(() -> u.userExitedFromChat(this, user));
+            if(u != user) {
+                callQueue.add(() -> u.userExitedFromChat(this, user));
+            }
         }
+        runCallQueue();
     }
 
     public Collection<User> getUsers() {
@@ -63,17 +55,15 @@ public class Chat {
 
     public void sendMessage(User user, String message) {
         for (User u : users.values()) {
-            if (u != user) {
-                this.msgQueue.add(new MessageTuple(u, user, message));
-            }
+            this.callQueue.add(()->u.newMessage(this, user, message));
         }
-        sendMessagesInQueue();
+        runCallQueue();
     }
 
-    private void sendMessagesInQueue() {
-        this.msgQueue.forEach((t) -> {
-            msgExecutor.execute(() -> t.origin_user.newMessage(this, t.end_user, t.message));
-            this.msgQueue.remove(t);
+    private void runCallQueue() {
+        this.callQueue.forEach((c) -> {
+            msgExecutor.execute(() -> c.run());
+            this.callQueue.remove(c);
         });
     }
 
