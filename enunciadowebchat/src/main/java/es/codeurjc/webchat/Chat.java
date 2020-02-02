@@ -1,12 +1,7 @@
 package es.codeurjc.webchat;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.*;
+import java.util.concurrent.*;
 
 public class Chat {
 
@@ -23,7 +18,7 @@ public class Chat {
     }
 
     private ExecutorService msgExecutor = Executors.newCachedThreadPool();
-    private ConcurrentLinkedQueue<MessageTuple> msgQueue = new ConcurrentLinkedQueue();
+    private LinkedBlockingQueue<MessageTuple> msgQueue;
 
     private String name;
     private Map<String, User> users = Collections.synchronizedMap(new HashMap<>());
@@ -33,6 +28,7 @@ public class Chat {
     public Chat(ChatManager chatManager, String name) {
         this.chatManager = chatManager;
         this.name = name;
+        this.msgQueue = new LinkedBlockingQueue<>();
     }
 
     public String getName() {
@@ -75,10 +71,10 @@ public class Chat {
     }
 
     private void sendMessagesInQueue() {
-        while(!this.msgQueue.isEmpty()) {
-            MessageTuple tuple = this.msgQueue.remove();
-            msgExecutor.execute(() -> tuple.origin_user.newMessage(this, tuple.end_user, tuple.message));
-        }
+        this.msgQueue.forEach((t) -> {
+            msgExecutor.execute(() -> t.origin_user.newMessage(this, t.end_user, t.message));
+            this.msgQueue.remove(t);
+        });
     }
 
     public void close() {
